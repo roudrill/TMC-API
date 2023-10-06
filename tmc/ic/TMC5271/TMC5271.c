@@ -26,17 +26,17 @@ void tmc5271_init(TMC5271TypeDef *tmc5271, uint8_t channel, ConfigurationTypeDef
 	tmc5271->config->callback     = NULL;
 	tmc5271->config->channel      = channel;
 	tmc5271->config->configIndex  = 0;
-	tmc5271->config->state        = CONFIG_READY;
+	tmc5271->config->state        = TMC_CONFIG_READY;
 
 }
 
 // Reset the TMC5271.
 uint8_t tmc5271_reset(TMC5271TypeDef *tmc5271)
 {
-	if(tmc5271->config->state != CONFIG_READY)
+	if(tmc5271->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc5271->config->state        = CONFIG_RESET;
+	tmc5271->config->state        = TMC_CONFIG_RESET;
 	tmc5271->config->configIndex  = 0;
 
 	return true;
@@ -67,7 +67,7 @@ void tmc5271_periodicJob(TMC5271TypeDef *tmc5271, uint32_t tick)
 {
 	uint32_t tickDiff;
 
-	if(tmc5271->config->state != CONFIG_READY)
+	if(tmc5271->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5271);
 		return;
@@ -136,7 +136,7 @@ void tmc5271_moveBy(TMC5271TypeDef *tmc5271, uint8_t motor, uint32_t velocityMax
 
 uint8_t tmc5271_consistencyCheck(TMC5271TypeDef *tmc5271)
 {
-	if(tmc5271->config->state != CONFIG_READY)
+	if(tmc5271->config->state != TMC_CONFIG_READY)
 		return 0;
 	return 0;
 }

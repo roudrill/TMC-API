@@ -19,9 +19,9 @@ typedef void (*tmc_callback_config)(void);
 
 // States of a configuration
 typedef enum {
-	CONFIG_READY,
-	CONFIG_RESET,
-	CONFIG_RESTORE
+	TMC_CONFIG_READY,
+	TMC_CONFIG_RESET,
+	TMC_CONFIG_RESTORE
 } ConfigState;
 
 // structure for configuration mechanism

@@ -125,7 +125,7 @@ void tmc2660_writeConfiguration(TMC2660TypeDef *tmc2660, ConfigurationTypeDef *T
 	UNUSED(TMC2660_config);
 
 	//uint8_t *ptr = &TMC2660_config->configIndex;
-	//const int32_t *settings = (TMC2660_config->state == CONFIG_RESTORE) ? TMC2660_config->shadowRegister : tmc2660->registerResetState;
+	//const int32_t *settings = (TMC2660_config->state == TMC_CONFIG_RESTORE) ? TMC2660_config->shadowRegister : tmc2660->registerResetState;
 
 	//while((*ptr >= 0) && !IS_WRITEABLE(tmc2660->registerAccess[*ptr]))
 		//(*ptr)--;
@@ -137,7 +137,7 @@ void tmc2660_writeConfiguration(TMC2660TypeDef *tmc2660, ConfigurationTypeDef *T
 	//}
 	//else
 	//{
-		//TMC2660_config->state = CONFIG_READY;
+		//TMC2660_config->state = TMC_CONFIG_READY;
 	//}
 }
 

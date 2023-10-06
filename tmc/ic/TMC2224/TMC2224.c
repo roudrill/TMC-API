@@ -77,7 +77,7 @@ void tmc2224_initConfig(TMC2224TypeDef *tmc2224)
 void tmc2224_writeConfiguration(TMC2224TypeDef *tmc2224, ConfigurationTypeDef *TMC2224_config)
 {
 	uint8_t *ptr = &TMC2224_config->configIndex;
-	const int32_t *settings = (TMC2224_config->state == CONFIG_RESTORE) ? TMC2224_config->shadowRegister : tmc2224->registerResetState;
+	const int32_t *settings = (TMC2224_config->state == TMC_CONFIG_RESTORE) ? TMC2224_config->shadowRegister : tmc2224->registerResetState;
 
 	while((*ptr < TMC2224_REGISTER_COUNT) && !TMC_IS_WRITABLE(tmc2224->registerAccess[*ptr]))
 		(*ptr)++;
@@ -89,7 +89,7 @@ void tmc2224_writeConfiguration(TMC2224TypeDef *tmc2224, ConfigurationTypeDef *T
 	}
 	else
 	{
-		TMC2224_config->state = CONFIG_READY;
+		TMC2224_config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -97,7 +97,7 @@ void tmc2224_periodicJob(uint8_t motor, uint32_t tick, TMC2224TypeDef *tmc2224, 
 {
 	UNUSED(motor);
 
-	if(TMC2224_config->state != CONFIG_READY && (tick - tmc2224->oldTick) > 2)
+	if(TMC2224_config->state != TMC_CONFIG_READY && (tick - tmc2224->oldTick) > 2)
 	{
 		tmc2224_writeConfiguration(tmc2224, TMC2224_config);
 		tmc2224->oldTick = tick;
@@ -106,7 +106,7 @@ void tmc2224_periodicJob(uint8_t motor, uint32_t tick, TMC2224TypeDef *tmc2224, 
 
 uint8_t tmc2224_reset(TMC2224TypeDef *tmc2224, ConfigurationTypeDef *TMC2224_config)
 {
-	if(TMC2224_config->state != CONFIG_READY)
+	if(TMC2224_config->state != TMC_CONFIG_READY)
 		return 0;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -115,7 +115,7 @@ uint8_t tmc2224_reset(TMC2224TypeDef *tmc2224, ConfigurationTypeDef *TMC2224_con
 		tmc2224->registerAccess[i] &= ~TMC_ACCESS_DIRTY;
 		TMC2224_config->shadowRegister[i] = 0;
 	}
-	TMC2224_config->state        = CONFIG_RESET;
+	TMC2224_config->state        = TMC_CONFIG_RESET;
 	TMC2224_config->configIndex  = 0;
 
 	return 1;
@@ -123,10 +123,10 @@ uint8_t tmc2224_reset(TMC2224TypeDef *tmc2224, ConfigurationTypeDef *TMC2224_con
 
 uint8_t tmc2224_restore(ConfigurationTypeDef *TMC2224_config)
 {
-	if(TMC2224_config->state != CONFIG_READY)
+	if(TMC2224_config->state != TMC_CONFIG_READY)
 		return 0;
 
-	TMC2224_config->state        = CONFIG_RESTORE;
+	TMC2224_config->state        = TMC_CONFIG_RESTORE;
 	TMC2224_config->configIndex  = 0;
 
 	return 1;

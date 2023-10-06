@@ -79,7 +79,7 @@ void tmc2226_init(TMC2226TypeDef *tmc2226, uint8_t channel, uint8_t slaveAddress
 	tmc2226->config->callback     = NULL;
 	tmc2226->config->channel      = channel;
 	tmc2226->config->configIndex  = 0;
-	tmc2226->config->state        = CONFIG_READY;
+	tmc2226->config->state        = TMC_CONFIG_READY;
 
 	for(size_t i = 0; i < TMC2226_REGISTER_COUNT; i++)
 	{
@@ -93,7 +93,7 @@ static void writeConfiguration(TMC2226TypeDef *tmc2226)
 	uint8_t *ptr = &tmc2226->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc2226->config->state == CONFIG_RESTORE)
+	if(tmc2226->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc2226->config->shadowRegister;
 		// Find the next restorable register
@@ -124,7 +124,7 @@ static void writeConfiguration(TMC2226TypeDef *tmc2226)
 			((tmc2226_callback)tmc2226->config->callback)(tmc2226, tmc2226->config->state);
 		}
 
-		tmc2226->config->state = CONFIG_READY;
+		tmc2226->config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -132,7 +132,7 @@ void tmc2226_periodicJob(TMC2226TypeDef *tmc2226, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc2226->config->state != CONFIG_READY)
+	if(tmc2226->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc2226);
 		return;
@@ -152,7 +152,7 @@ void tmc2226_setCallback(TMC2226TypeDef *tmc2226, tmc2226_callback callback)
 
 uint8_t tmc2226_reset(TMC2226TypeDef *tmc2226)
 {
-	if(tmc2226->config->state != CONFIG_READY)
+	if(tmc2226->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -162,7 +162,7 @@ uint8_t tmc2226_reset(TMC2226TypeDef *tmc2226)
 		tmc2226->config->shadowRegister[i] = 0;
 	}
 
-	tmc2226->config->state        = CONFIG_RESET;
+	tmc2226->config->state        = TMC_CONFIG_RESET;
 	tmc2226->config->configIndex  = 0;
 
 	return true;
@@ -170,10 +170,10 @@ uint8_t tmc2226_reset(TMC2226TypeDef *tmc2226)
 
 uint8_t tmc2226_restore(TMC2226TypeDef *tmc2226)
 {
-	if(tmc2226->config->state != CONFIG_READY)
+	if(tmc2226->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2226->config->state        = CONFIG_RESTORE;
+	tmc2226->config->state        = TMC_CONFIG_RESTORE;
 	tmc2226->config->configIndex  = 0;
 
 	return true;

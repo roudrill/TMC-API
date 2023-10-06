@@ -69,7 +69,7 @@ void tmc5130_init(TMC5130TypeDef *tmc5130, uint8_t channel, ConfigurationTypeDef
 	tmc5130->config->callback     = NULL;
 	tmc5130->config->channel      = channel;
 	tmc5130->config->configIndex  = 0;
-	tmc5130->config->state        = CONFIG_READY;
+	tmc5130->config->state        = TMC_CONFIG_READY;
 
 	size_t i;
 	for(i = 0; i < TMC5130_REGISTER_COUNT; i++)
@@ -117,7 +117,7 @@ void tmc5130_fillShadowRegisters(TMC5130TypeDef *tmc5130)
 // Reset the TMC5130.
 uint8_t tmc5130_reset(TMC5130TypeDef *tmc5130)
 {
-	if(tmc5130->config->state != CONFIG_READY)
+	if(tmc5130->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -128,7 +128,7 @@ uint8_t tmc5130_reset(TMC5130TypeDef *tmc5130)
 		tmc5130->config->shadowRegister[i] = 0;
 	}
 
-	tmc5130->config->state        = CONFIG_RESET;
+	tmc5130->config->state        = TMC_CONFIG_RESET;
 	tmc5130->config->configIndex  = 0;
 
 	return true;
@@ -138,10 +138,10 @@ uint8_t tmc5130_reset(TMC5130TypeDef *tmc5130)
 // This can be used to recover the IC configuration after a VM power loss.
 uint8_t tmc5130_restore(TMC5130TypeDef *tmc5130)
 {
-	if(tmc5130->config->state != CONFIG_READY)
+	if(tmc5130->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc5130->config->state        = CONFIG_RESTORE;
+	tmc5130->config->state        = TMC_CONFIG_RESTORE;
 	tmc5130->config->configIndex  = 0;
 
 	return true;
@@ -169,7 +169,7 @@ static void writeConfiguration(TMC5130TypeDef *tmc5130)
 	uint8_t *ptr = &tmc5130->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc5130->config->state == CONFIG_RESTORE)
+	if(tmc5130->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc5130->config->shadowRegister;
 		// Find the next restorable register
@@ -200,14 +200,14 @@ static void writeConfiguration(TMC5130TypeDef *tmc5130)
 			((tmc5130_callback)tmc5130->config->callback)(tmc5130, tmc5130->config->state);
 		}
 
-		tmc5130->config->state = CONFIG_READY;
+		tmc5130->config->state = TMC_CONFIG_READY;
 	}
 }
 
 // Call this periodically
 void tmc5130_periodicJob(TMC5130TypeDef *tmc5130, uint32_t tick)
 {
-	if(tmc5130->config->state != CONFIG_READY)
+	if(tmc5130->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5130);
 		return;

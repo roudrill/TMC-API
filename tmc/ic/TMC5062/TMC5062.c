@@ -75,7 +75,7 @@ void tmc5062_init(TMC5062TypeDef *tmc5062, ConfigurationTypeDef *tmc5062_config,
 	tmc5062->config->callback     = NULL;
 	tmc5062->config->channel      = 0;
 	tmc5062->config->configIndex  = 0;
-	tmc5062->config->state        = CONFIG_READY;
+	tmc5062->config->state        = TMC_CONFIG_READY;
 
 	for(int32_t i = 0; i < TMC5062_REGISTER_COUNT; i++)
 	{
@@ -130,7 +130,7 @@ static void writeConfiguration(TMC5062TypeDef *tmc5062)
 	uint8_t *ptr = &tmc5062->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc5062->config->state == CONFIG_RESTORE)
+	if(tmc5062->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc5062->config->shadowRegister;
 		// Find the next restorable register
@@ -158,13 +158,13 @@ static void writeConfiguration(TMC5062TypeDef *tmc5062)
 			((tmc5062_callback)tmc5062->config->callback)(tmc5062, tmc5062->config->state);
 		}
 
-		tmc5062->config->state = CONFIG_READY;
+		tmc5062->config->state = TMC_CONFIG_READY;
 	}
 }
 
 void tmc5062_periodicJob(TMC5062TypeDef *tmc5062, uint32_t tick)
 {
-	if(tmc5062->config->state != CONFIG_READY)
+	if(tmc5062->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5062);
 		return;
@@ -183,7 +183,7 @@ void tmc5062_periodicJob(TMC5062TypeDef *tmc5062, uint32_t tick)
 
 uint8_t tmc5062_reset(TMC5062TypeDef *tmc5062)
 {
-	if(tmc5062->config->state != CONFIG_READY)
+	if(tmc5062->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -193,7 +193,7 @@ uint8_t tmc5062_reset(TMC5062TypeDef *tmc5062)
 		tmc5062->config->shadowRegister[i] = 0;
 	}
 
-	tmc5062->config->state        = CONFIG_RESET;
+	tmc5062->config->state        = TMC_CONFIG_RESET;
 	tmc5062->config->configIndex  = 0;
 
 	return true;
@@ -201,10 +201,10 @@ uint8_t tmc5062_reset(TMC5062TypeDef *tmc5062)
 
 uint8_t tmc5062_restore(TMC5062TypeDef *tmc5062)
 {
-	if(tmc5062->config->state != CONFIG_READY)
+	if(tmc5062->config->state != TMC_CONFIG_READY)
 		return 0;
 
-	tmc5062->config->state        = CONFIG_RESTORE;
+	tmc5062->config->state        = TMC_CONFIG_RESTORE;
 	tmc5062->config->configIndex  = 0;
 
 	return 1;

@@ -25,7 +25,7 @@ void tmc2240_init(TMC2240TypeDef *tmc2240, uint8_t channel, ConfigurationTypeDef
 	tmc2240->config->callback     = NULL;
 	tmc2240->config->channel      = channel;
 	tmc2240->config->configIndex  = 0;
-	tmc2240->config->state        = CONFIG_READY;
+	tmc2240->config->state        = TMC_CONFIG_READY;
 
 	size_t i;
 	for(i = 0; i < TMC2240_REGISTER_COUNT; i++)
@@ -38,10 +38,10 @@ void tmc2240_init(TMC2240TypeDef *tmc2240, uint8_t channel, ConfigurationTypeDef
 // Reset the TMC2240.
 uint8_t tmc2240_reset(TMC2240TypeDef *tmc2240)
 {
-	if(tmc2240->config->state != CONFIG_READY)
+	if(tmc2240->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2240->config->state        = CONFIG_RESET;
+	tmc2240->config->state        = TMC_CONFIG_RESET;
 	tmc2240->config->configIndex  = 0;
 
 	return true;
@@ -51,10 +51,10 @@ uint8_t tmc2240_reset(TMC2240TypeDef *tmc2240)
 // This can be used to recover the IC configuration after a VM power loss.
 uint8_t tmc2240_restore(TMC2240TypeDef *tmc2240)
 {
-	if(tmc2240->config->state != CONFIG_READY)
+	if(tmc2240->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2240->config->state        = CONFIG_RESTORE;
+	tmc2240->config->state        = TMC_CONFIG_RESTORE;
 	tmc2240->config->configIndex  = 0;
 
 	return true;
@@ -110,7 +110,7 @@ static void writeConfiguration(TMC2240TypeDef *tmc2240)
 			((tmc2240_callback)tmc2240->config->callback)(tmc2240, tmc2240->config->state);
 		}
 
-		tmc2240->config->state = CONFIG_READY;
+		tmc2240->config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -118,7 +118,7 @@ static void writeConfiguration(TMC2240TypeDef *tmc2240)
 void tmc2240_periodicJob(TMC2240TypeDef *tmc2240, uint32_t tick)
 {
 	UNUSED(tick);
-	if(tmc2240->config->state != CONFIG_READY)
+	if(tmc2240->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc2240);
 		return;

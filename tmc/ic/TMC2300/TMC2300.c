@@ -21,7 +21,7 @@ void tmc2300_writeInt(TMC2300TypeDef *tmc2300, uint8_t address, int32_t value)
 	// to the IC - we only update the shadow registers. After exiting standby or
 	// completing a reset we transition into a restore, which pushes the shadow
 	// register contents into the chip.
-	if (!tmc2300->standbyEnabled || tmc2300->config->state != CONFIG_RESET)
+	if (!tmc2300->standbyEnabled || tmc2300->config->state != TMC_CONFIG_RESET)
 	{
 		uint8_t data[8];
 
@@ -86,7 +86,7 @@ void tmc2300_init(TMC2300TypeDef *tmc2300, uint8_t channel, ConfigurationTypeDef
 	tmc2300->config->callback     = NULL;
 	tmc2300->config->channel      = channel;
 	tmc2300->config->configIndex  = 0;
-	tmc2300->config->state        = CONFIG_READY;
+	tmc2300->config->state        = TMC_CONFIG_READY;
 
 	// Default slave address: 0
 	tmc2300->slaveAddress = 0;
@@ -144,7 +144,7 @@ void writeConfiguration(TMC2300TypeDef *tmc2300)
 	uint8_t *ptr = &tmc2300->config->configIndex;
 	const int32_t *settings;
 
-	if (tmc2300->config->state == CONFIG_RESET)
+	if (tmc2300->config->state == TMC_CONFIG_RESET)
 	{
 		settings = tmc2300->registerResetState;
 		// Find the next resettable register
@@ -183,16 +183,16 @@ void writeConfiguration(TMC2300TypeDef *tmc2300)
 			((tmc2300_callback)tmc2300->config->callback)(tmc2300, tmc2300->config->state);
 		}
 
-		if (tmc2300->config->state == CONFIG_RESET)
+		if (tmc2300->config->state == TMC_CONFIG_RESET)
 		{
 			// Reset done -> Perform a restore
-			tmc2300->config->state        = CONFIG_RESTORE;
+			tmc2300->config->state        = TMC_CONFIG_RESTORE;
 			tmc2300->config->configIndex  = 0;
 		}
 		else
 		{
 			// Restore done -> configuration complete
-			tmc2300->config->state = CONFIG_READY;
+			tmc2300->config->state = TMC_CONFIG_READY;
 		}
 	}
 }
@@ -215,7 +215,7 @@ void tmc2300_periodicJob(TMC2300TypeDef *tmc2300, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc2300->config->state != CONFIG_READY)
+	if(tmc2300->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc2300);
 		return;
@@ -235,7 +235,7 @@ uint8_t tmc2300_reset(TMC2300TypeDef *tmc2300)
 	}
 
 	// Activate the reset config mechanism
-	tmc2300->config->state        = CONFIG_RESET;
+	tmc2300->config->state        = TMC_CONFIG_RESET;
 	tmc2300->config->configIndex  = 0;
 
 	return 1;
@@ -245,10 +245,10 @@ uint8_t tmc2300_restore(TMC2300TypeDef *tmc2300)
 {
 	// Do not interrupt a reset
 	// A reset will transition into a restore anyways
-	if(tmc2300->config->state == CONFIG_RESET)
+	if(tmc2300->config->state == TMC_CONFIG_RESET)
 		return 0;
 
-	tmc2300->config->state        = CONFIG_RESTORE;
+	tmc2300->config->state        = TMC_CONFIG_RESTORE;
 	tmc2300->config->configIndex  = 0;
 
 	return 1;

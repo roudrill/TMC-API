@@ -77,7 +77,7 @@ void tmc2225_init(TMC2225TypeDef *tmc2225, uint8_t channel, ConfigurationTypeDef
 	tmc2225->config->callback     = NULL;
 	tmc2225->config->channel      = channel;
 	tmc2225->config->configIndex  = 0;
-	tmc2225->config->state        = CONFIG_READY;
+	tmc2225->config->state        = TMC_CONFIG_READY;
 
 	for(size_t i = 0; i < TMC2225_REGISTER_COUNT; i++)
 	{
@@ -91,7 +91,7 @@ static void writeConfiguration(TMC2225TypeDef *tmc2225)
 	uint8_t *ptr = &tmc2225->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc2225->config->state == CONFIG_RESTORE)
+	if(tmc2225->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc2225->config->shadowRegister;
 		// Find the next restorable register
@@ -122,7 +122,7 @@ static void writeConfiguration(TMC2225TypeDef *tmc2225)
 			((tmc2225_callback)tmc2225->config->callback)(tmc2225, tmc2225->config->state);
 		}
 
-		tmc2225->config->state = CONFIG_READY;
+		tmc2225->config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -130,7 +130,7 @@ void tmc2225_periodicJob(TMC2225TypeDef *tmc2225, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc2225->config->state != CONFIG_READY)
+	if(tmc2225->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc2225);
 		return;
@@ -152,7 +152,7 @@ void tmc2225_setCallback(TMC2225TypeDef *tmc2225, tmc2225_callback callback)
 
 uint8_t tmc2225_reset(TMC2225TypeDef *tmc2225)
 {
-	if(tmc2225->config->state != CONFIG_READY)
+	if(tmc2225->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -162,7 +162,7 @@ uint8_t tmc2225_reset(TMC2225TypeDef *tmc2225)
 		tmc2225->config->shadowRegister[i] = 0;
 	}
 
-	tmc2225->config->state        = CONFIG_RESET;
+	tmc2225->config->state        = TMC_CONFIG_RESET;
 	tmc2225->config->configIndex  = 0;
 
 	return true;
@@ -170,10 +170,10 @@ uint8_t tmc2225_reset(TMC2225TypeDef *tmc2225)
 
 uint8_t tmc2225_restore(TMC2225TypeDef *tmc2225)
 {
-	if(tmc2225->config->state != CONFIG_READY)
+	if(tmc2225->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2225->config->state        = CONFIG_RESTORE;
+	tmc2225->config->state        = TMC_CONFIG_RESTORE;
 	tmc2225->config->configIndex  = 0;
 
 	return true;

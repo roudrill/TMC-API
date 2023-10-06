@@ -69,7 +69,7 @@ void tmc5160_init(TMC5160TypeDef *tmc5160, uint8_t channel, ConfigurationTypeDef
 	tmc5160->config->callback     = NULL;
 	tmc5160->config->channel      = channel;
 	tmc5160->config->configIndex  = 0;
-	tmc5160->config->state        = CONFIG_READY;
+	tmc5160->config->state        = TMC_CONFIG_READY;
 
 	size_t i;
 	for(i = 0; i < TMC5160_REGISTER_COUNT; i++)
@@ -117,7 +117,7 @@ void tmc5160_fillShadowRegisters(TMC5160TypeDef *tmc5160)
 // Reset the TMC5160.
 uint8_t tmc5160_reset(TMC5160TypeDef *tmc5160)
 {
-	if(tmc5160->config->state != CONFIG_READY)
+	if(tmc5160->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -128,7 +128,7 @@ uint8_t tmc5160_reset(TMC5160TypeDef *tmc5160)
 		tmc5160->config->shadowRegister[i] = 0;
 	}
 
-	tmc5160->config->state        = CONFIG_RESET;
+	tmc5160->config->state        = TMC_CONFIG_RESET;
 	tmc5160->config->configIndex  = 0;
 
 	return true;
@@ -138,10 +138,10 @@ uint8_t tmc5160_reset(TMC5160TypeDef *tmc5160)
 // This can be used to recover the IC configuration after a VM power loss.
 uint8_t tmc5160_restore(TMC5160TypeDef *tmc5160)
 {
-	if(tmc5160->config->state != CONFIG_READY)
+	if(tmc5160->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc5160->config->state        = CONFIG_RESTORE;
+	tmc5160->config->state        = TMC_CONFIG_RESTORE;
 	tmc5160->config->configIndex  = 0;
 
 	return true;
@@ -169,7 +169,7 @@ static void writeConfiguration(TMC5160TypeDef *tmc5160)
 	uint8_t *ptr = &tmc5160->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc5160->config->state == CONFIG_RESTORE)
+	if(tmc5160->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc5160->config->shadowRegister;
 		// Find the next restorable register
@@ -200,14 +200,14 @@ static void writeConfiguration(TMC5160TypeDef *tmc5160)
 			((tmc5160_callback)tmc5160->config->callback)(tmc5160, tmc5160->config->state);
 		}
 
-		tmc5160->config->state = CONFIG_READY;
+		tmc5160->config->state = TMC_CONFIG_READY;
 	}
 }
 
 // Call this periodically
 void tmc5160_periodicJob(TMC5160TypeDef *tmc5160, uint32_t tick)
 {
-	if(tmc5160->config->state != CONFIG_READY)
+	if(tmc5160->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5160);
 		return;
@@ -280,7 +280,7 @@ void tmc5160_moveBy(TMC5160TypeDef *tmc5160, int32_t *ticks, uint32_t velocityMa
 uint8_t tmc5160_consistencyCheck(TMC5160TypeDef *tmc5160)
 {
 	// Config has not yet been written -> it cant be consistent
-	if(tmc5160->config->state != CONFIG_READY)
+	if(tmc5160->config->state != TMC_CONFIG_READY)
 		return 0;
 
 	// Check constant shadow registers consistent with actual registers

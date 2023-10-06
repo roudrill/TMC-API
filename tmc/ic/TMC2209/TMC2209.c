@@ -79,7 +79,7 @@ void tmc2209_init(TMC2209TypeDef *tmc2209, uint8_t channel, uint8_t slaveAddress
 	tmc2209->config->callback     = NULL;
 	tmc2209->config->channel      = channel;
 	tmc2209->config->configIndex  = 0;
-	tmc2209->config->state        = CONFIG_READY;
+	tmc2209->config->state        = TMC_CONFIG_READY;
 
 	for(size_t i = 0; i < TMC2209_REGISTER_COUNT; i++)
 	{
@@ -93,7 +93,7 @@ static void writeConfiguration(TMC2209TypeDef *tmc2209)
 	uint8_t *ptr = &tmc2209->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc2209->config->state == CONFIG_RESTORE)
+	if(tmc2209->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc2209->config->shadowRegister;
 		// Find the next restorable register
@@ -124,7 +124,7 @@ static void writeConfiguration(TMC2209TypeDef *tmc2209)
 			((tmc2209_callback)tmc2209->config->callback)(tmc2209, tmc2209->config->state);
 		}
 
-		tmc2209->config->state = CONFIG_READY;
+		tmc2209->config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -132,7 +132,7 @@ void tmc2209_periodicJob(TMC2209TypeDef *tmc2209, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc2209->config->state != CONFIG_READY)
+	if(tmc2209->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc2209);
 		return;
@@ -152,7 +152,7 @@ void tmc2209_setCallback(TMC2209TypeDef *tmc2209, tmc2209_callback callback)
 
 uint8_t tmc2209_reset(TMC2209TypeDef *tmc2209)
 {
-	if(tmc2209->config->state != CONFIG_READY)
+	if(tmc2209->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -162,7 +162,7 @@ uint8_t tmc2209_reset(TMC2209TypeDef *tmc2209)
 		tmc2209->config->shadowRegister[i] = 0;
 	}
 
-	tmc2209->config->state        = CONFIG_RESET;
+	tmc2209->config->state        = TMC_CONFIG_RESET;
 	tmc2209->config->configIndex  = 0;
 
 	return true;
@@ -170,10 +170,10 @@ uint8_t tmc2209_reset(TMC2209TypeDef *tmc2209)
 
 uint8_t tmc2209_restore(TMC2209TypeDef *tmc2209)
 {
-	if(tmc2209->config->state != CONFIG_READY)
+	if(tmc2209->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2209->config->state        = CONFIG_RESTORE;
+	tmc2209->config->state        = TMC_CONFIG_RESTORE;
 	tmc2209->config->configIndex  = 0;
 
 	return true;

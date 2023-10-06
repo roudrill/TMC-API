@@ -25,14 +25,17 @@
 
 // => Shared variables // todo API 2: decide if these variables go here (API) or in Evalboard/Module
 //extern int32_t tmc43xx_VMax;
-extern uint8_t tmc43xx_VMaxModified;
+//--> extern 
+uint8_t tmc43xx_VMaxModified;
 //extern int32_t tmc43xx_AMax;
 //extern uint8_t tmc43xx_AMaxModified;
 // <= Shared variables
 
 // => SPI wrapper
-extern int32_t tmc43xx_spi_readInt(uint8_t axis, uint8_t address);
-extern void tmc43xx_spi_writeInt(uint8_t axis, uint8_t address, int32_t value);
+//--> extern 
+int32_t tmc43xx_spi_readInt(uint8_t axis, uint8_t address) { return 1; }
+//--> extern 
+void tmc43xx_spi_writeInt(uint8_t axis, uint8_t address, int32_t value) {}
 //extern uint16_t tmc43xx_spi_readRegister16BitValue(uint8_t axis, uint8_t address, uint8_t channel);
 //extern void tmc43xx_spi_writeRegister16BitValue(uint8_t axis, uint8_t address, uint8_t channel, uint16_t value);
 // <= SPI wrapper

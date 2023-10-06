@@ -24,7 +24,7 @@ void tmc5240_init(TMC5240TypeDef *tmc5240, uint8_t channel, ConfigurationTypeDef
 	tmc5240->config->callback     = NULL;
 	tmc5240->config->channel      = channel;
 	tmc5240->config->configIndex  = 0;
-	tmc5240->config->state        = CONFIG_READY;
+	tmc5240->config->state        = TMC_CONFIG_READY;
 
 	size_t i;
 	for(i = 0; i < TMC5240_REGISTER_COUNT; i++)
@@ -37,11 +37,11 @@ void tmc5240_init(TMC5240TypeDef *tmc5240, uint8_t channel, ConfigurationTypeDef
 // Reset the TMC5240.
 uint8_t tmc5240_reset(TMC5240TypeDef *tmc5240)
 {
-	if(tmc5240->config->state != CONFIG_READY)
+	if(tmc5240->config->state != TMC_CONFIG_READY)
 		return false;
 
 
-	tmc5240->config->state        = CONFIG_RESET;
+	tmc5240->config->state        = TMC_CONFIG_RESET;
 	tmc5240->config->configIndex  = 0;
 
 	return true;
@@ -51,10 +51,10 @@ uint8_t tmc5240_reset(TMC5240TypeDef *tmc5240)
 // This can be used to recover the IC configuration after a VM power loss.
 uint8_t tmc5240_restore(TMC5240TypeDef *tmc5240)
 {
-	if(tmc5240->config->state != CONFIG_READY)
+	if(tmc5240->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc5240->config->state        = CONFIG_RESTORE;
+	tmc5240->config->state        = TMC_CONFIG_RESTORE;
 	tmc5240->config->configIndex  = 0;
 
 	return true;
@@ -110,14 +110,14 @@ static void writeConfiguration(TMC5240TypeDef *tmc5240)
 			((tmc5240_callback)tmc5240->config->callback)(tmc5240, tmc5240->config->state);
 		}
 
-		tmc5240->config->state = CONFIG_READY;
+		tmc5240->config->state = TMC_CONFIG_READY;
 	}
 }
 
 // Call this periodically
 void tmc5240_periodicJob(TMC5240TypeDef *tmc5240, uint32_t tick)
 {
-	if(tmc5240->config->state != CONFIG_READY)
+	if(tmc5240->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5240);
 		return;

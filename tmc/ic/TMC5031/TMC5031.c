@@ -99,7 +99,7 @@ void tmc5031_initConfig(TMC5031TypeDef *tmc5031)
 void tmc5031_writeConfiguration(TMC5031TypeDef *tmc5031, ConfigurationTypeDef *TMC5031_config)
 {
 	uint8_t *ptr = &TMC5031_config->configIndex;
-	const int32_t *settings = (TMC5031_config->state == CONFIG_RESTORE) ? TMC5031_config->shadowRegister : tmc5031->registerResetState;
+	const int32_t *settings = (TMC5031_config->state == TMC_CONFIG_RESTORE) ? TMC5031_config->shadowRegister : tmc5031->registerResetState;
 
 	while((*ptr < TMC5031_REGISTER_COUNT) && !TMC_IS_WRITABLE(tmc5031->registerAccess[*ptr]))
 		(*ptr)++;
@@ -111,7 +111,7 @@ void tmc5031_writeConfiguration(TMC5031TypeDef *tmc5031, ConfigurationTypeDef *T
 	}
 	else
 	{
-		TMC5031_config->state = CONFIG_READY;
+		TMC5031_config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -120,7 +120,7 @@ void tmc5031_periodicJob(uint8_t motor, uint32_t tick, TMC5031TypeDef *tmc5031, 
 	int32_t xActual;
 	uint32_t tickDiff;
 
-	if(TMC5031_config->state != CONFIG_READY)
+	if(TMC5031_config->state != TMC_CONFIG_READY)
 	{
 		tmc5031_writeConfiguration(tmc5031, TMC5031_config);
 		return;
@@ -151,10 +151,10 @@ void tmc5031_periodicJob(uint8_t motor, uint32_t tick, TMC5031TypeDef *tmc5031, 
 
 uint8_t tmc5031_reset(ConfigurationTypeDef *TMC5031_config)
 {
-	if(TMC5031_config->state != CONFIG_READY)
+	if(TMC5031_config->state != TMC_CONFIG_READY)
 		return 0;
 
-	TMC5031_config->state        = CONFIG_READY;
+	TMC5031_config->state        = TMC_CONFIG_READY;
 	TMC5031_config->configIndex  = 0;
 
 	return 1;
@@ -162,10 +162,10 @@ uint8_t tmc5031_reset(ConfigurationTypeDef *TMC5031_config)
 
 uint8_t tmc5031_restore(ConfigurationTypeDef *TMC5031_config)
 {
-	if(TMC5031_config->state != CONFIG_READY)
+	if(TMC5031_config->state != TMC_CONFIG_READY)
 		return 0;
 
-	TMC5031_config->state        = CONFIG_RESTORE;
+	TMC5031_config->state        = TMC_CONFIG_RESTORE;
 	TMC5031_config->configIndex  = 0;
 
 	return 1;

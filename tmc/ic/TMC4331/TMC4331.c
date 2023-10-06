@@ -10,7 +10,8 @@
 // => SPI wrapper
 // Send [length] bytes stored in the [data] array over SPI and overwrite [data]
 // with the replies. data[0] is the first byte sent and received.
-extern void tmc4331_readWriteArray(uint8_t channel, uint8_t *data, size_t length);
+//--> extern 
+void tmc4331_readWriteArray(uint8_t channel, uint8_t *data, size_t length) {}
 // <= SPI wrapper
 
 // Writes (x1 << 24) | (x2 << 16) | (x3 << 8) | x4 to the given address
@@ -127,7 +128,7 @@ void tmc4331_init(TMC4331TypeDef *tmc4331, uint8_t channel, ConfigurationTypeDef
 	tmc4331->config->callback     = NULL;
 	tmc4331->config->channel      = channel;
 	tmc4331->config->configIndex  = 0;
-	tmc4331->config->state        = CONFIG_READY;
+	tmc4331->config->state        = TMC_CONFIG_READY;
 
 	int32_t i;
 	for(i = 0; i < TMC4331_REGISTER_COUNT; i++)
@@ -139,7 +140,7 @@ void tmc4331_init(TMC4331TypeDef *tmc4331, uint8_t channel, ConfigurationTypeDef
 
 uint8_t tmc4331_reset(TMC4331TypeDef *tmc4331)
 {
-	if(tmc4331->config->state != CONFIG_READY)
+	if(tmc4331->config->state != TMC_CONFIG_READY)
 		return 0;
 
 	int32_t i;
@@ -148,7 +149,7 @@ uint8_t tmc4331_reset(TMC4331TypeDef *tmc4331)
 	for(i = 0; i < TMC4331_REGISTER_COUNT; i++)
 		tmc4331->registerAccess[i] &= ~TMC_ACCESS_DIRTY;
 
-	tmc4331->config->state        = CONFIG_RESET;
+	tmc4331->config->state        = TMC_CONFIG_RESET;
 	tmc4331->config->configIndex  = 0;
 
 	return 1;
@@ -156,10 +157,10 @@ uint8_t tmc4331_reset(TMC4331TypeDef *tmc4331)
 
 uint8_t tmc4331_restore(TMC4331TypeDef *tmc4331)
 {
-	if(tmc4331->config->state != CONFIG_READY)
+	if(tmc4331->config->state != TMC_CONFIG_READY)
 		return 0;
 
-	tmc4331->config->state        = CONFIG_RESTORE;
+	tmc4331->config->state        = TMC_CONFIG_RESTORE;
 	tmc4331->config->configIndex  = 0;
 
 	return 1;
@@ -182,7 +183,7 @@ static void tmc4331_writeConfiguration(TMC4331TypeDef *tmc4331)
 	uint8_t *ptr = &tmc4331->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc4331->config->state == CONFIG_RESTORE)
+	if(tmc4331->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = &tmc4331->config->shadowRegister[0];
 		// Find the next restorable register
@@ -208,13 +209,13 @@ static void tmc4331_writeConfiguration(TMC4331TypeDef *tmc4331)
 			((tmc4331_callback)tmc4331->config->callback)(tmc4331, tmc4331->config->state);
 		}
 
-		tmc4331->config->state = CONFIG_READY;
+		tmc4331->config->state = TMC_CONFIG_READY;
 	}
 }
 
 void tmc4331_periodicJob(TMC4331TypeDef *tmc4331, uint32_t tick)
 {
-	if(tmc4331->config->state != CONFIG_READY)
+	if(tmc4331->config->state != TMC_CONFIG_READY)
 	{
 		tmc4331_writeConfiguration(tmc4331);
 		return;

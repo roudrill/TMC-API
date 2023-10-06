@@ -64,7 +64,7 @@ void tmc2130_init(TMC2130TypeDef *tmc2130, uint8_t channel, ConfigurationTypeDef
 	tmc2130->config->callback     = NULL;
 	tmc2130->config->channel      = channel;
 	tmc2130->config->configIndex  = 0;
-	tmc2130->config->state        = CONFIG_READY;
+	tmc2130->config->state        = TMC_CONFIG_READY;
 
 	size_t i;
 	for(i = 0; i < TMC2130_REGISTER_COUNT; i++)
@@ -112,7 +112,7 @@ void tmc2130_fillShadowRegisters(TMC2130TypeDef *tmc2130)
 // Reset the TMC5130
 uint8_t tmc2130_reset(TMC2130TypeDef *tmc2130)
 {
-	if(tmc2130->config->state != CONFIG_READY)
+	if(tmc2130->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits
@@ -123,7 +123,7 @@ uint8_t tmc2130_reset(TMC2130TypeDef *tmc2130)
 		tmc2130->config->shadowRegister[i] = 0;
 	}
 
-	tmc2130->config->state        = CONFIG_RESET;
+	tmc2130->config->state        = TMC_CONFIG_RESET;
 	tmc2130->config->configIndex  = 0;
 
 	return true;
@@ -133,10 +133,10 @@ uint8_t tmc2130_reset(TMC2130TypeDef *tmc2130)
 // This can be used to recover the IC configuration after a VM power loss.
 uint8_t tmc2130_restore(TMC2130TypeDef *tmc2130)
 {
-	if(tmc2130->config->state != CONFIG_READY)
+	if(tmc2130->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2130->config->state        = CONFIG_RESTORE;
+	tmc2130->config->state        = TMC_CONFIG_RESTORE;
 	tmc2130->config->configIndex  = 0;
 
 	return true;
@@ -164,7 +164,7 @@ static void writeConfiguration(TMC2130TypeDef *tmc2130)
 	uint8_t *ptr = &tmc2130->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc2130->config->state == CONFIG_RESTORE)
+	if(tmc2130->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc2130->config->shadowRegister;
 		// Find the next restorable register
@@ -195,7 +195,7 @@ static void writeConfiguration(TMC2130TypeDef *tmc2130)
 			((tmc2130_callback)tmc2130->config->callback)(tmc2130, tmc2130->config->state);
 		}
 
-		tmc2130->config->state = CONFIG_READY;
+		tmc2130->config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -204,7 +204,7 @@ void tmc2130_periodicJob(TMC2130TypeDef *tmc2130, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc2130->config->state != CONFIG_READY)
+	if(tmc2130->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc2130);
 	}

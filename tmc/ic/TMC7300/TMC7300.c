@@ -21,7 +21,7 @@ void tmc7300_writeInt(TMC7300TypeDef *tmc7300, uint8_t address, int32_t value)
 	// to the IC - we only update the shadow registers. After exiting standby or
 	// completing a reset we transition into a restore, which pushes the shadow
 	// register contents into the chip.
-	if (!tmc7300->standbyEnabled || tmc7300->config->state == CONFIG_RESET)
+	if (!tmc7300->standbyEnabled || tmc7300->config->state == TMC_CONFIG_RESET)
 	{
 		uint8_t data[8];
 
@@ -86,7 +86,7 @@ void tmc7300_init(TMC7300TypeDef *tmc7300, uint8_t channel, ConfigurationTypeDef
 	tmc7300->config->callback     = NULL;
 	tmc7300->config->channel      = channel;
 	tmc7300->config->configIndex  = 0;
-	tmc7300->config->state        = CONFIG_RESET;
+	tmc7300->config->state        = TMC_CONFIG_RESET;
 
 	// Default slave address: 0
 	tmc7300->slaveAddress = 0;
@@ -141,7 +141,7 @@ static void writeConfiguration(TMC7300TypeDef *tmc7300)
 	const int32_t *settings;
 
 	// Find the next register to reset/restore
-	if (tmc7300->config->state == CONFIG_RESET)
+	if (tmc7300->config->state == TMC_CONFIG_RESET)
 	{
 		settings = tmc7300->registerResetState;
 		// Find the next resettable register
@@ -180,16 +180,16 @@ static void writeConfiguration(TMC7300TypeDef *tmc7300)
 			((tmc7300_callback)tmc7300->config->callback)(tmc7300, tmc7300->config->state);
 		}
 
-		if (tmc7300->config->state == CONFIG_RESET)
+		if (tmc7300->config->state == TMC_CONFIG_RESET)
 		{
 			// Reset done -> Perform a restore
-			tmc7300->config->state        = CONFIG_RESTORE;
+			tmc7300->config->state        = TMC_CONFIG_RESTORE;
 			tmc7300->config->configIndex  = 0;
 		}
 		else
 		{
 			// Restore done -> configuration complete
-			tmc7300->config->state = CONFIG_READY;
+			tmc7300->config->state = TMC_CONFIG_READY;
 		}
 	}
 }
@@ -212,7 +212,7 @@ void tmc7300_periodicJob(TMC7300TypeDef *tmc7300, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc7300->config->state != CONFIG_READY)
+	if(tmc7300->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc7300);
 		return;
@@ -232,7 +232,7 @@ uint8_t tmc7300_reset(TMC7300TypeDef *tmc7300)
 	}
 
 	// Activate the reset config mechanism
-	tmc7300->config->state        = CONFIG_RESET;
+	tmc7300->config->state        = TMC_CONFIG_RESET;
 	tmc7300->config->configIndex  = 0;
 
 	return 1;
@@ -242,10 +242,10 @@ uint8_t tmc7300_restore(TMC7300TypeDef *tmc7300)
 {
 	// Do not interrupt a reset
 	// A reset will transition into a restore anyways
-	if(tmc7300->config->state == CONFIG_RESET)
+	if(tmc7300->config->state == TMC_CONFIG_RESET)
 		return 0;
 
-	tmc7300->config->state        = CONFIG_RESTORE;
+	tmc7300->config->state        = TMC_CONFIG_RESTORE;
 	tmc7300->config->configIndex  = 0;
 
 	return 1;
@@ -279,7 +279,7 @@ void tmc7300_setStandby(TMC7300TypeDef *tmc7300, uint8_t standbyState)
 uint8_t tmc7300_consistencyCheck(TMC7300TypeDef *tmc7300)
 {
 	// Config has not yet been written -> it can't be consistent
-	if(tmc7300->config->state != CONFIG_READY)
+	if(tmc7300->config->state != TMC_CONFIG_READY)
 		return 0;
 
 	// Standby is enabled -> registers can't be accessed

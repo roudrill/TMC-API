@@ -127,7 +127,7 @@ void tmc4361A_init(TMC4361ATypeDef *tmc4361A, uint8_t channel, ConfigurationType
 	tmc4361A->config->callback     = NULL;
 	tmc4361A->config->channel      = channel;
 	tmc4361A->config->configIndex  = 0;
-	tmc4361A->config->state        = CONFIG_READY;
+	tmc4361A->config->state        = TMC_CONFIG_READY;
 
 	int32_t i;
 	for(i = 0; i < TMC4361A_REGISTER_COUNT; i++)
@@ -172,7 +172,7 @@ void tmc4361A_fillShadowRegisters(TMC4361ATypeDef *tmc4361A)
 
 uint8_t tmc4361A_reset(TMC4361ATypeDef *tmc4361A)
 {
-	if(tmc4361A->config->state != CONFIG_READY)
+	if(tmc4361A->config->state != TMC_CONFIG_READY)
 		return 0;
 
 	int32_t i;
@@ -181,7 +181,7 @@ uint8_t tmc4361A_reset(TMC4361ATypeDef *tmc4361A)
 	for(i = 0; i < TMC4361A_REGISTER_COUNT; i++)
 		tmc4361A->registerAccess[i] &= ~TMC_ACCESS_DIRTY;
 
-	tmc4361A->config->state        = CONFIG_RESET;
+	tmc4361A->config->state        = TMC_CONFIG_RESET;
 	tmc4361A->config->configIndex  = 0;
 
 	return 1;
@@ -189,10 +189,10 @@ uint8_t tmc4361A_reset(TMC4361ATypeDef *tmc4361A)
 
 uint8_t tmc4361A_restore(TMC4361ATypeDef *tmc4361A)
 {
-	if(tmc4361A->config->state != CONFIG_READY)
+	if(tmc4361A->config->state != TMC_CONFIG_READY)
 		return 0;
 
-	tmc4361A->config->state        = CONFIG_RESTORE;
+	tmc4361A->config->state        = TMC_CONFIG_RESTORE;
 	tmc4361A->config->configIndex  = 0;
 
 	return 1;
@@ -215,7 +215,7 @@ static void tmc4361A_writeConfiguration(TMC4361ATypeDef *tmc4361A)
 	uint8_t *ptr = &tmc4361A->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc4361A->config->state == CONFIG_RESTORE)
+	if(tmc4361A->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = &tmc4361A->config->shadowRegister[0];
 		// Find the next restorable register
@@ -241,13 +241,13 @@ static void tmc4361A_writeConfiguration(TMC4361ATypeDef *tmc4361A)
 			((tmc4361A_callback)tmc4361A->config->callback)(tmc4361A, tmc4361A->config->state);
 		}
 
-		tmc4361A->config->state = CONFIG_READY;
+		tmc4361A->config->state = TMC_CONFIG_READY;
 	}
 }
 
 void tmc4361A_periodicJob(TMC4361ATypeDef *tmc4361A, uint32_t tick)
 {
-	if(tmc4361A->config->state != CONFIG_READY)
+	if(tmc4361A->config->state != TMC_CONFIG_READY)
 	{
 		tmc4361A_writeConfiguration(tmc4361A);
 		return;

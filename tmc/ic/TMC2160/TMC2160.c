@@ -56,7 +56,7 @@ void tmc2160_init(TMC2160TypeDef *tmc2160, uint8_t channel, ConfigurationTypeDef
 	tmc2160->config->callback     = NULL;
 	tmc2160->config->channel      = channel;
 	tmc2160->config->configIndex  = 0;
-	tmc2160->config->state        = CONFIG_READY;
+	tmc2160->config->state        = TMC_CONFIG_READY;
 
 	int32_t i;
 	for(i = 0; i < TMC2160_REGISTER_COUNT; i++)
@@ -98,7 +98,7 @@ void tmc2160_fillShadowRegisters(TMC2160TypeDef *tmc2160)
 
 uint8_t tmc2160_reset(TMC2160TypeDef *tmc2160)
 {
-	if(tmc2160->config->state != CONFIG_READY)
+	if(tmc2160->config->state != TMC_CONFIG_READY)
 		return false;
 
 	int32_t i;
@@ -107,7 +107,7 @@ uint8_t tmc2160_reset(TMC2160TypeDef *tmc2160)
 	for(i = 0; i < TMC2160_REGISTER_COUNT; i++)
 		tmc2160->registerAccess[i] &= ~TMC_ACCESS_DIRTY;
 
-	tmc2160->config->state        = CONFIG_RESET;
+	tmc2160->config->state        = TMC_CONFIG_RESET;
 	tmc2160->config->configIndex  = 0;
 
 	return true;
@@ -115,10 +115,10 @@ uint8_t tmc2160_reset(TMC2160TypeDef *tmc2160)
 
 uint8_t tmc2160_restore(TMC2160TypeDef *tmc2160)
 {
-	if(tmc2160->config->state != CONFIG_READY)
+	if(tmc2160->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc2160->config->state        = CONFIG_RESTORE;
+	tmc2160->config->state        = TMC_CONFIG_RESTORE;
 	tmc2160->config->configIndex  = 0;
 
 	return true;
@@ -141,7 +141,7 @@ static void writeConfiguration(TMC2160TypeDef *tmc2160)
 	uint8_t *ptr = &tmc2160->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc2160->config->state == CONFIG_RESTORE)
+	if(tmc2160->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc2160->config->shadowRegister;
 		// Find the next restorable register
@@ -166,7 +166,7 @@ static void writeConfiguration(TMC2160TypeDef *tmc2160)
 		if(tmc2160->config->callback)
 			((tmc2160_callback)tmc2160->config->callback)(tmc2160, tmc2160->config->state);
 
-		tmc2160->config->state = CONFIG_READY;
+		tmc2160->config->state = TMC_CONFIG_READY;
 	}
 }
 
@@ -174,7 +174,7 @@ void tmc2160_periodicJob(TMC2160TypeDef *tmc2160, uint32_t tick)
 {
 	UNUSED(tick);
 
-	if(tmc2160->config->state != CONFIG_READY)
+	if(tmc2160->config->state != TMC_CONFIG_READY)
 		writeConfiguration(tmc2160);
 }
 

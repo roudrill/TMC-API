@@ -81,8 +81,8 @@ static uint32_t SPISGConf;
 static uint32_t SPIDriverConf;
 
 // Choose the configuration that suits your board // todo API 2: configuration should be chosen outside API e.g. in TMC-EvalSystem
-#define DEVTYPE_TMC428 // Direct SPI communication if TMC262 is connected to the processor
-//#define DEVTYPE_TMC43xx // Communication is forwarded to TMC262 by TMC43xx with "cover datagrams"
+//--> #define DEVTYPE_TMC428 // Direct SPI communication if TMC262 is connected to the processor
+#define DEVTYPE_TMC43xx // Communication is forwarded to TMC262 by TMC43xx with "cover datagrams"
 
 #if defined(DEVTYPE_TMC428)
 	// => SPI wrapper

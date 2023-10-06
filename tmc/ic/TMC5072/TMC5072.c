@@ -120,7 +120,7 @@ void tmc5072_init(TMC5072TypeDef *tmc5072, uint8_t channel, ConfigurationTypeDef
 	tmc5072->config->callback     = NULL;
 	tmc5072->config->channel      = channel;
 	tmc5072->config->configIndex  = 0;
-	tmc5072->config->state        = CONFIG_READY;
+	tmc5072->config->state        = TMC_CONFIG_READY;
 
 	uint32_t i;
 	for(i = 0; i < TMC5072_REGISTER_COUNT; i++)
@@ -183,7 +183,7 @@ static void writeConfiguration(TMC5072TypeDef *tmc5072)
 	uint8_t *ptr = &tmc5072->config->configIndex;
 	const int32_t *settings;
 
-	if(tmc5072->config->state == CONFIG_RESTORE)
+	if(tmc5072->config->state == TMC_CONFIG_RESTORE)
 	{
 		settings = tmc5072->config->shadowRegister;
 		// Find the next restorable register
@@ -211,14 +211,14 @@ static void writeConfiguration(TMC5072TypeDef *tmc5072)
 			((tmc5072_callback)tmc5072->config->callback)(tmc5072, tmc5072->config->state);
 		}
 
-		tmc5072->config->state = CONFIG_READY;
+		tmc5072->config->state = TMC_CONFIG_READY;
 	}
 }
 
 //void tmc5072_writeConfiguration(TMC5072TypeDef *tmc5072, ConfigurationTypeDef *TMC5072_config)
 //{
 //	uint8_t *ptr = &TMC5072_config->configIndex;
-//	const int32_t *settings = (TMC5072_config->state == CONFIG_RESTORE) ? TMC5072_config->shadowRegister : tmc5072->registerResetState;
+//	const int32_t *settings = (TMC5072_config->state == TMC_CONFIG_RESTORE) ? TMC5072_config->shadowRegister : tmc5072->registerResetState;
 //	tmc5072->shadowRegister = TMC5072_config->shadowRegister; // TODO API 2: Find better position (LK)
 //
 //	while((*ptr < TMC5072_REGISTER_COUNT) && !TMC_IS_WRITABLE(tmc5072->registerAccess[*ptr]))
@@ -231,7 +231,7 @@ static void writeConfiguration(TMC5072TypeDef *tmc5072)
 //	}
 //	else
 //	{
-//		TMC5072_config->state = CONFIG_READY;
+//		TMC5072_config->state = TMC_CONFIG_READY;
 //	}
 //}
 
@@ -239,7 +239,7 @@ void tmc5072_periodicJob(TMC5072TypeDef *tmc5072, uint32_t tick)
 {
 	uint32_t tickDiff;
 
-	if(tmc5072->config->state != CONFIG_READY)
+	if(tmc5072->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5072);
 		return;
@@ -265,7 +265,7 @@ void tmc5072_periodicJob(TMC5072TypeDef *tmc5072, uint32_t tick)
 //	int32_t xActual;
 //	uint32_t tickDiff;
 //
-//	if(TMC5072_config->state != CONFIG_READY)
+//	if(TMC5072_config->state != TMC_CONFIG_READY)
 //	{
 //		tmc5072_writeConfiguration(tmc5072, TMC5072_config);
 //		return;
@@ -296,7 +296,7 @@ void tmc5072_periodicJob(TMC5072TypeDef *tmc5072, uint32_t tick)
 
 uint8_t tmc5072_reset(TMC5072TypeDef *tmc5072)
 {
-	if(tmc5072->config->state != CONFIG_READY)
+	if(tmc5072->config->state != TMC_CONFIG_READY)
 		return false;
 
 	// Reset the dirty bits and wipe the shadow registers
@@ -306,7 +306,7 @@ uint8_t tmc5072_reset(TMC5072TypeDef *tmc5072)
 		tmc5072->config->shadowRegister[i] = 0;
 	}
 
-	tmc5072->config->state        = CONFIG_RESET;
+	tmc5072->config->state        = TMC_CONFIG_RESET;
 	tmc5072->config->configIndex  = 0;
 
 	return true;
@@ -314,10 +314,10 @@ uint8_t tmc5072_reset(TMC5072TypeDef *tmc5072)
 
 //uint8_t tmc5072_reset(ConfigurationTypeDef *TMC5072_config)
 //{
-//	if(TMC5072_config->state != CONFIG_READY)
+//	if(TMC5072_config->state != TMC_CONFIG_READY)
 //		return 0;
 //
-//	TMC5072_config->state        = CONFIG_RESET;
+//	TMC5072_config->state        = TMC_CONFIG_RESET;
 //	TMC5072_config->configIndex  = 0;
 //
 //	return 1;
@@ -325,10 +325,10 @@ uint8_t tmc5072_reset(TMC5072TypeDef *tmc5072)
 
 uint8_t tmc5072_restore(TMC5072TypeDef *tmc5072)
 {
-	if(tmc5072->config->state != CONFIG_READY)
+	if(tmc5072->config->state != TMC_CONFIG_READY)
 		return 0;
 
-	tmc5072->config->state        = CONFIG_RESTORE;
+	tmc5072->config->state        = TMC_CONFIG_RESTORE;
 	tmc5072->config->configIndex  = 0;
 
 	return 1;

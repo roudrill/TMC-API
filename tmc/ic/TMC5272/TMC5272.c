@@ -26,18 +26,18 @@ void tmc5272_init(TMC5272TypeDef *tmc5272, uint8_t channel, ConfigurationTypeDef
 	tmc5272->config->callback     = NULL;
 	tmc5272->config->channel      = channel;
 	tmc5272->config->configIndex  = 0;
-	tmc5272->config->state        = CONFIG_READY;
+	tmc5272->config->state        = TMC_CONFIG_READY;
 
 }
 
 // Reset the TMC5272.
 uint8_t tmc5272_reset(TMC5272TypeDef *tmc5272)
 {
-	if(tmc5272->config->state != CONFIG_READY)
+	if(tmc5272->config->state != TMC_CONFIG_READY)
 		return false;
 
 
-	tmc5272->config->state        = CONFIG_RESET;
+	tmc5272->config->state        = TMC_CONFIG_RESET;
 	tmc5272->config->configIndex  = 0;
 
 	return true;
@@ -47,10 +47,10 @@ uint8_t tmc5272_reset(TMC5272TypeDef *tmc5272)
 // This can be used to recover the IC configuration after a VM power loss.
 uint8_t tmc5272_restore(TMC5272TypeDef *tmc5272)
 {
-	if(tmc5272->config->state != CONFIG_READY)
+	if(tmc5272->config->state != TMC_CONFIG_READY)
 		return false;
 
-	tmc5272->config->state        = CONFIG_RESTORE;
+	tmc5272->config->state        = TMC_CONFIG_RESTORE;
 	tmc5272->config->configIndex  = 0;
 
 	return true;
@@ -88,7 +88,7 @@ void tmc5272_periodicJob(TMC5272TypeDef *tmc5272, uint32_t tick)
 {
 	uint32_t tickDiff;
 
-	if(tmc5272->config->state != CONFIG_READY)
+	if(tmc5272->config->state != TMC_CONFIG_READY)
 	{
 		writeConfiguration(tmc5272);
 		return;
@@ -163,7 +163,7 @@ void tmc5272_moveBy(TMC5272TypeDef *tmc5272, uint8_t motor, uint32_t velocityMax
 
 uint8_t tmc5272_consistencyCheck(TMC5272TypeDef *tmc5272)
 {
-	if(tmc5272->config->state != CONFIG_READY)
+	if(tmc5272->config->state != TMC_CONFIG_READY)
 		return 0;
 	return 0;
 }

@@ -132,7 +132,7 @@ void tmc2590_init(TMC2590TypeDef *tmc2590, uint8_t channel, ConfigurationTypeDef
 	tmc2590->config->callback     = NULL;
 	tmc2590->config->channel      = channel;
 	tmc2590->config->configIndex  = 0;
-	tmc2590->config->state        = CONFIG_READY;
+	tmc2590->config->state        = TMC_CONFIG_READY;
 
 	tmc2590->continuousModeEnable      = 0;
 
