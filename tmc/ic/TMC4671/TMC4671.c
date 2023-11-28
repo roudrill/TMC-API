@@ -11,6 +11,11 @@
 #define STATE_WAIT_INIT_TIME   2
 #define STATE_ESTIMATE_OFFSET  3
 
+
+#if defined(Zephyr)
+extern uint32_t tmc4671_readwriteInt(uint8_t motor, uint8_t read, uint8_t address, uint32_t value);
+#endif
+
 // => SPI wrapper
 extern uint8_t tmc4671_readwriteByte(uint8_t motor, uint8_t data, uint8_t lastTransfer);
 // <= SPI wrapper
@@ -18,14 +23,19 @@ extern uint8_t tmc4671_readwriteByte(uint8_t motor, uint8_t data, uint8_t lastTr
 // spi access
 int32_t tmc4671_readInt(uint8_t motor, uint8_t address)
 {
+	int32_t value;
+
 	// clear write bit
 	address &= 0x7F;
 
+#if defined(Zephyr)
+	return tmc4671_readwriteInt(motor, 1, address, 0);
+#else
 	// write address
 	tmc4671_readwriteByte(motor, address, false);
 
 	// read data
-	int32_t value = tmc4671_readwriteByte(motor, 0, false);
+	value = tmc4671_readwriteByte(motor, 0, false);
 	value <<= 8;
 	value |= tmc4671_readwriteByte(motor, 0, false);
 	value <<= 8;
@@ -34,10 +44,14 @@ int32_t tmc4671_readInt(uint8_t motor, uint8_t address)
 	value |= tmc4671_readwriteByte(motor, 0, true);
 
 	return value;
+#endif
 }
 
 void tmc4671_writeInt(uint8_t motor, uint8_t address, int32_t value)
 {
+#if defined(Zephyr)
+	tmc4671_readwriteInt(motor, 0, address|0x80, value);
+#else
 	// write address
 	tmc4671_readwriteByte(motor, address|0x80, false);
 
@@ -46,6 +60,7 @@ void tmc4671_writeInt(uint8_t motor, uint8_t address, int32_t value)
 	tmc4671_readwriteByte(motor, 0xFF & (value>>16), false);
 	tmc4671_readwriteByte(motor, 0xFF & (value>>8), false);
 	tmc4671_readwriteByte(motor, 0xFF & (value>>0), true);
+#endif 
 }
 
 uint16_t tmc4671_readRegister16BitValue(uint8_t motor, uint8_t address, uint8_t channel)
